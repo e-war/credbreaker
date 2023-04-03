@@ -1,0 +1,2 @@
+# CREDBREAKER
+A python program made for linux to extract dumped windows browser cookies / passwords encrypted with AES + DPAPI. Does not use win32crypt, instead uses : https://github.com/login-securite/DonPAPI/blob/main/lib/dpapi.py

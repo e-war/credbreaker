@@ -7,7 +7,7 @@ import base64
 import sqlite3
 import shutil
 from datetime import datetime, timedelta
-import win32crypt # pip install pypiwin32
+from lib.dpapi import *
 from Crypto.Cipher import AES # pip install pycryptodome
 
 def get_chrome_datetime(chromedate):
@@ -28,7 +28,9 @@ def get_encryption_key(state_path):
         state = json.loads(state)
     key = base64.b64decode(state["os_crypt"]["encrypted_key"])
     key = key[5:] # remove DPAPI
-    return win32crypt.CryptUnprotectData(key,None,None,None,0)[1]
+    localstate = DPAPI(None,None)
+    return localstate.find_Blob_masterkey(raw_data=key)
+    #return win32crypt.CryptUnprotectData(key,None,None,None,0)[1]
 
 def decrypt_data(data, key):
     try:
@@ -69,4 +71,5 @@ def sort_passwords(key,password_path):
 def main():
     key = get_encryption_key("./chrome_state")
     sort_cookies(key,"./chrome_cookies")
-    sort_passwords(key,"./chrome_passwords")
+    sort_passwords(key,"./chrome_login")
+main()

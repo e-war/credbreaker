@@ -52,7 +52,6 @@ from impacket.examples import logger
 from impacket.examples.secretsdump import LocalOperations, LSASecrets
 from impacket.structure import hexdump
 from impacket.dpapi import *
-from lib.toolbox import bcolors
 
 """MasterKeyFile, MasterKey, CredHist, DomainKey, CredentialFile, DPAPI_BLOB, \
 	CREDENTIAL_BLOB, VAULT_VCRD, VAULT_VPOL, VAULT_KNOWN_SCHEMAS, VAULT_VPOL_KEYS, P_BACKUP_KEY, PREFERRED_BACKUP_KEY, \
