@@ -9,9 +9,9 @@ import shutil
 from datetime import datetime, timedelta
 from Crypto.Cipher import AES # pip install pycryptodome
 
-key_path = "./edge_key"
-cookie_path = "./edge_cookies"
-login_path = "./edge_login"
+key_path = "./chrome_key"
+cookie_path = "./google_cookies"
+login_path = "./google_login"
 
 def get_chrome_datetime(chromedate):
     """Return a `datetime.datetime` object from a chrome format datetime
@@ -46,7 +46,7 @@ def sort_cookies(key, cookie_path):
     db = sqlite3.connect(cookie_path)
     db.text_factory = lambda b: b.decode(errors="ignore")
     cursor = db.cursor()
-    cursor.execute("SELECT host_key, name, windows overwrite pin stackoverflowvalue, encrypted_value, expires_utc FROM cookies")
+    cursor.execute("SELECT host_key, name, value, encrypted_value, expires_utc FROM cookies")
     print("GENERATING COOKIE CSV...")
     with open("./cookies.csv","a",encoding="utf-8") as cocsv:
         cocsv.write("Host,Name,Value,Expires\n")
